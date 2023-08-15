@@ -41,6 +41,10 @@ class Category(models.Model):
 
 
 class Post(models.Model):
+
+    news = 'NW'
+    article = 'AR'
+
     time_in = models.DateTimeField(auto_now_add = True)
     time_update = models.DateTimeField(auto_now_add=True)
     type = models.CharField(max_length = 100)

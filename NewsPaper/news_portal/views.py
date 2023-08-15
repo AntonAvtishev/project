@@ -4,7 +4,7 @@ from datetime import datetime
 from pprint import pprint
 from .filters import PostFilter
 from .forms import AddPostForm
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 
 
@@ -46,11 +46,19 @@ class PostSearch(ListView):
         return context
 
 
-class PostCreate(PermissionRequiredMixin, CreateView):
-    permission_required = 'news.add_post'
+class PostCreate(CreateView):
     template_name = 'post_create.html'
     form_class = AddPostForm
     model = Post
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        if 'news' in self.request.path:
+            post_type = 'NE'
+        elif 'articles' in self.request.path:
+            post_type = 'AR'
+        self.object.type = post_type
+        return super().form_valid(form)
 
 
 class PostUpdate(LoginRequiredMixin, UpdateView):
