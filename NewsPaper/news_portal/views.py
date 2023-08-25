@@ -4,7 +4,6 @@ from datetime import datetime
 from pprint import pprint
 from .filters import PostFilter
 from .forms import AddPostForm
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 
 
@@ -61,7 +60,7 @@ class PostCreate(CreateView):
         return super().form_valid(form)
 
 
-class PostUpdate(LoginRequiredMixin, UpdateView):
+class PostUpdate(UpdateView):
     template_name = 'post_create.html'
     form_class = AddPostForm
     model = Post
