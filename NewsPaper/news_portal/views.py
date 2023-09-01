@@ -1,10 +1,16 @@
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from .models import Post
+from .models import Post, Appointment
 from datetime import datetime
 from pprint import pprint
 from .filters import PostFilter
 from .forms import AddPostForm
 from django.urls import reverse_lazy
+from django.core.mail import send_mail
+from django.views import View
+from django.shortcuts import render, reverse, redirect
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
+from django.core.mail import mail_admins
 
 
 class PostList(ListView):
@@ -75,3 +81,40 @@ class PostDelete(DeleteView):
     template_name = 'post_delete.html'
     queryset = Post.objects.all()
     success_url = reverse_lazy('news')
+
+
+class AppointmentView(View):
+    def get(self, request, *args, **kwargs):
+        return render(request, 'make_appointment.html', {})
+
+    def post(self, request, *args, **kwargs):
+        appointment = Appointment(
+            date=datetime.strptime(request.POST['date'], '%Y-%m-%d'),
+            client_name=request.POST['client_name'],
+            message=request.POST['message'],
+        )
+        appointment.save()
+
+        html_content = render_to_string(
+            'appointment/appointment_created.html',
+            {
+                'appointment': appointment,
+            }
+        )
+
+        msg = EmailMultiAlternatives(
+            subject=f'{appointment.client_name} {appointment.date.strftime("%Y-%M-%d")}',
+            body=appointment.message,
+            from_email='Scotcher2@yandex.ru',
+            to=['avtishev@list.ru']
+        )
+        msg.attach_alternative(html_content, "appointment/appointment_created.html")  # добавляем html
+
+        mail_admins(
+            subject=f'{appointment.client_name} {appointment.date.strftime("%d %m %Y")}',
+            message=appointment.message,
+        )
+
+        msg.send()  # отсылаем
+
+        return redirect('appointment:make_appointment')
