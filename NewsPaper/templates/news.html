@@ -19,6 +19,7 @@ News
                <td><h4><b>Заголовок</b></h4></td>
                <td><h4><b>Дата публикации</b></h4></td>
                <td><h4><b>Статья</b></h4></td>
+               <td><h4><b>Категория</b></h4></td>
            </tr>
 
            {% for new in news %}
@@ -26,6 +27,10 @@ News
                <td>{{ new.title|censor }}</td>
                <td>{{ new.time_in|date:'M d Y H i' }}</td>
                <td>{{ new.text|censor|truncatechars:20 }}</td>
+               <td>{% for category in new.category.all %}
+               <a href="{% url 'category_list' category.id %}"> {{ category }}</a>
+               {% endfor %}
+               </td>
            </tr>
            {% endfor %}
 

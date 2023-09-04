@@ -19,6 +19,7 @@ New
                <td><h4><b>Заголовок</b></h4></td>
                <td><h4><b>Дата публикации</b></h4></td>
                <td><h4><b>Статья</b></h4></td>
+               <td><h4><b>Категория</b></h4></td>
            </tr>
 
 
@@ -26,6 +27,7 @@ New
                <td>{{ new.title|censor }}</td>
                <td>{{ new.time_in|date:'M d Y' }}</td>
                <td>{{ new.text|censor }}</td>
+               <td>{{ new.category }}</td>
            </tr>
 
        </table>
