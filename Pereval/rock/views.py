@@ -1,7 +1,8 @@
 from .serializers import *
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, generics
 from rest_framework.response import Response
 from .models import Pereval
+from django.http import JsonResponse
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -50,3 +51,40 @@ class PerevalViewSet(viewsets.ModelViewSet):
                 'message': 'Ошибка подключения к базе данных',
                 'id': None,
             })
+
+    def partial_update(self, request, *args, **kwargs):
+        pereval = self.get_object()
+        if pereval.status == 'new':
+            serializer = PerevalSerializer(pereval, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({
+                    'state': '1',
+                    'message': 'Запись успешно изменена'
+                })
+            else:
+                return Response({
+                    'state': '0',
+                    'message': serializer.errors
+                })
+        else:
+            return Response({
+                'state': '0',
+                'message': f"Не удалось обновить запись, так как сведения уже у модератора и имеют статус: {pereval.get_status_display()}"
+            })
+
+
+class EmailAPIView(generics.ListAPIView):
+    serializer_class = PerevalSerializer
+
+    def get(self, request, *args, **kwargs):
+        email = kwargs.get('email', None)
+        if Pereval.objects.filter(user__email=email):
+            data = PerevalSerializer(Pereval.objects.filter(user__email=email), many=True).data
+            api_status = status.HTTP_200_OK
+        else:
+            data = {
+                'message': f'Не существует пользователя с таким email - {email}'
+            }
+            api_status = 404
+        return JsonResponse(data, status=api_status, safe=False)
